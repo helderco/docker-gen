@@ -1,0 +1,37 @@
+#!/bin/bash
+
+function docker_api {
+    local scheme
+    local curl_opts=(-s)
+    local method=${2:-GET}
+    # data to POST
+    if [[ -n "${3:-}" ]]; then
+        curl_opts+=(-d "$3")
+    fi
+    if [[ -z "$DOCKER_HOST" ]];then
+        echo "Error DOCKER_HOST variable not set" >&2
+        return 1
+    fi
+    if [[ $DOCKER_HOST == unix://* ]]; then
+        curl_opts+=(--unix-socket ${DOCKER_HOST#unix://})
+        scheme='http://localhost'
+    else
+        scheme="http://${DOCKER_HOST#*://}"
+    fi
+    [[ $method = "POST" ]] && curl_opts+=(-H 'Content-Type: application/json')
+    curl "${curl_opts[@]}" -X${method} ${scheme}$1
+}
+
+function docker_kill {
+    local id="${1?missing id}"
+    local signal="${2?missing signal}"
+    docker_api "/containers/$id/kill?signal=$signal" "POST"
+}
+
+labeled_cid=$(docker_api "/containers/json" | jq -r '.[] | select( .Labels["'$1'"] == "true")|.Id')
+if [[ -z "${labeled_cid:-}" ]]; then
+    echo "Error: can't get container id for label '$1'" >&2
+    exit 1
+fi
+
+docker_kill "$labeled_cid" SIGHUP
