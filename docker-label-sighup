@@ -28,7 +28,7 @@ function docker_kill {
     docker_api "/containers/$id/kill?signal=$signal" "POST"
 }
 
-labeled_cid=$(docker_api "/containers/json" | jq -r '.[] | select( .Labels["'$1'"] == "true")|.Id')
+labeled_cid=$(docker_api "/containers/json" | jq -r '.[] | select(.Labels["'$1'"])|.Id')
 if [[ -z "${labeled_cid:-}" ]]; then
     echo "Error: can't get container id for label '$1'" >&2
     exit 1
