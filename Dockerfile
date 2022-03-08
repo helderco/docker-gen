@@ -1,4 +1,4 @@
-FROM jwilder/docker-gen:latest
+FROM nginxproxy/docker-gen:latest
 
 RUN apk --update add bash curl jq && rm -rf /var/cache/apk/*
 
