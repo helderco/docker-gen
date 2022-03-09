@@ -40,7 +40,7 @@ services:
       - com.example.nginx_proxy=true
 
   dockergen:
-    image: helder/docker-gen:latest
+    image: ghcr.io/helderco/docker-gen:master
     command: -notify "docker-label-sighup com.example.nginx_proxy" -watch -only-exposed -wait 10s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
     volumes:
       - nginx:/etc/nginx/conf.d
